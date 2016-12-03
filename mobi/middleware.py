@@ -20,8 +20,11 @@ def ignore_user_agent(user_agent):
 
 
 class MobileDetectionMiddleware(object):
-    @staticmethod
-    def process_request(request):
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         """Adds a "mobile" attribute to the request which is True or False
            depending on whether the request should be considered to come from a
            small-screen device such as a phone or a PDA"""
@@ -59,7 +62,9 @@ class MobileDetectionMiddleware(object):
         #Otherwise it's not a mobile
         request.mobile = False
         request.tablet = False
-        return None
+
+        response = self.get_response(request)
+        return response
 
 
 def _is_tablet(s):
@@ -85,7 +90,10 @@ class MobileRedirectMiddleware(object):
     # i.e. http://example.mobi
     MOBI_REDIRECT_URL = getattr(settings, 'MOBI_REDIRECT_URL', None)
 
-    def process_request(self, request):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         do_redirect = False
 
         user_agent = request.META.get('HTTP_USER_AGENT', None)
@@ -114,4 +122,4 @@ class MobileRedirectMiddleware(object):
             response['Vary'] = 'User-Agent, Accept'
             return response
         else:
-            return None
+            return self.get_response(request)
