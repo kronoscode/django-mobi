@@ -34,14 +34,12 @@ class MobileDetectionMiddleware(object):
             #Reference from:
             # http://dev.opera.com/articles/view/opera-mini-request-headers/
             request.mobile = True
-            return None
 
         if "HTTP_ACCEPT" in request.META:
             s = request.META["HTTP_ACCEPT"].lower()
             if 'application/vnd.wap.xhtml+xml' in s:
                 # Then it's a wap browser
                 request.mobile = True
-                return None
 
         if "HTTP_USER_AGENT" in request.META:
             # This takes the most processing. Surprisingly enough, when I
@@ -57,7 +55,6 @@ class MobileDetectionMiddleware(object):
                         request.mobile = True
                         if MOBI_DETECT_TABLET:
                             request.tablet = _is_tablet(s)
-                        return None
 
         #Otherwise it's not a mobile
         request.mobile = False
