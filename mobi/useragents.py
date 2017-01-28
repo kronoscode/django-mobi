@@ -1,11 +1,11 @@
 import os.path
 
-from django.core.cache import cache
+from django.core.cache import caches
 
 
 def load_strings_from_file(cache_key, file_name):
     CACHE_TIMEOUT = 86400
-    agents = cache.get(cache_key)
+    agents = caches['default'].get(cache_key)
 
     if agents:
         # we got something, we are done, send it back.
@@ -17,7 +17,7 @@ def load_strings_from_file(cache_key, file_name):
 
     agents = [s.strip() for s in ss if s and not s.startswith('#')]
     # store to the cache
-    cache.set(cache_key, agents, CACHE_TIMEOUT)
+    caches['default'].set(cache_key, agents, CACHE_TIMEOUT)
     return agents
 
 
