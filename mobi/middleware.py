@@ -29,9 +29,13 @@ class MobileDetectionMiddleware(object):
            depending on whether the request should be considered to come from a
            small-screen device such as a phone or a PDA"""
 
+        # Defaults
+        request.mobile = False
+        request.tablet = False
+
         if "HTTP_X_OPERAMINI_FEATURES" in request.META:
-            #Then it's running opera mini. 'Nuff said.
-            #Reference from:
+            # Then it's running opera mini. 'Nuff said.
+            # Reference from:
             # http://dev.opera.com/articles/view/opera-mini-request-headers/
             request.mobile = True
 
@@ -50,15 +54,10 @@ class MobileDetectionMiddleware(object):
             for ua in search_strings:
                 if ua in s:
                     # check if we are ignoring this user agent: (IPad)
-
                     if not ignore_user_agent(s):
                         request.mobile = True
                         if MOBI_DETECT_TABLET:
                             request.tablet = _is_tablet(s)
-
-        #Otherwise it's not a mobile
-        request.mobile = False
-        request.tablet = False
 
         response = self.get_response(request)
         return response
@@ -69,7 +68,7 @@ def _is_tablet(s):
     tablet_strings = load_tablet_strings()
     for ta in tablet_strings:
         if ta == '__android__not_mobile__':
-            if 'android' in s and not 'mobile' in s:
+            if 'android' in s and 'mobile' not in s:
                 is_tablet = True
                 break
 
@@ -102,7 +101,7 @@ class MobileRedirectMiddleware(object):
         if x_wap or http_profile:
             do_redirect = True
 
-        #look at the user agent if they don't have x_wap and http_profile
+        # look at the user agent if they don't have x_wap and http_profile
         if user_agent and not do_redirect:
             user_agent = user_agent.lower()
             is_mobile = [w for w in search_strings if w in user_agent]
@@ -110,10 +109,10 @@ class MobileRedirectMiddleware(object):
                 do_redirect = True
 
         if do_redirect and self.MOBI_REDIRECT_URL:
-             # tell adaptation services (transcoders and proxies) to not
-             # alter the content based on user agent as it's already being
-             # managed by this script
-             # http://mobiforge.com/developing/story/setting-http-headers-advise-transcoding-proxies
+            # tell adaptation services (transcoders and proxies) to not
+            # alter the content based on user agent as it's already being
+            # managed by this script
+            # http://mobiforge.com/developing/story/setting-http-headers-advise-transcoding-proxies
             response = HttpResponseRedirect(self.MOBI_REDIRECT_URL)
             response['Cache-Control'] = 'no-transform'
             response['Vary'] = 'User-Agent, Accept'
